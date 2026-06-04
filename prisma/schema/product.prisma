@@ -1,0 +1,184 @@
+model Product {
+    productId String @id @default(uuid())
+
+    providerId String
+    provider   User   @relation(fields: [providerId], references: [id])
+
+    productName String
+    description String?
+    images      String?
+
+    featured Boolean @default(false)
+
+    availabilityStatus AVAILABILITYSTATUS @default(NOT_AVAILABLE)
+
+    tags        String[]
+    ingredients String[]
+    mileTime    String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    productPrices ProductPrice[]
+    addons        Addon[]
+    cartItems     CartItem[]
+    orderItems    OrderItem[]
+    reviews       Review[]
+}
+
+model ProductPrice {
+    priceId String @id @default(uuid())
+
+    productId String
+    product   Product @relation(fields: [productId], references: [productId])
+
+    priceType PRICETYPE @default(BASE)
+    size      String?
+
+    price    Float
+    newPrice Float?
+
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @default(now()) @updatedAt
+    cartItems CartItem[]
+}
+
+model Addon {
+    addonId String @id @default(uuid())
+
+    productId String
+    product   Product @relation(fields: [productId], references: [productId])
+
+    addonName      String
+    price          Float
+    // cartItems      CartItem[]
+    cartItemAddons CartItemAddon[]
+}
+
+model CartItem {
+    cartId String @id @default(uuid())
+
+    customerId String
+    customer   User   @relation(fields: [customerId], references: [id])
+
+    productId String
+    product   Product @relation(fields: [productId], references: [productId])
+
+    priceId      String?
+    productPrice ProductPrice? @relation(fields: [priceId], references: [priceId])
+
+    // addonId String?
+    // addon   Addon?  @relation(fields: [addonId], references: [addonId])
+
+    quantity  Int    @default(1)
+    unitPrice Float?
+    subtotal  Float?
+
+    cartItemAddons CartItemAddon[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model CartItemAddon {
+    cartItemAddonId String @id @default(uuid())
+
+    cartId   String
+    cartItem CartItem @relation(fields: [cartId], references: [cartId])
+
+    addonId String
+    addon   Addon  @relation(fields: [addonId], references: [addonId])
+}
+
+model Order {
+    orderId String @id @default(uuid())
+
+    customerId String
+    customer   User   @relation(fields: [customerId], references: [id])
+
+    totalAmount Float?
+
+    status OrderStatus @default(PENDING)
+
+    orderItems OrderItem[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+    itemId String @id @default(uuid())
+
+    orderId String
+    order   Order  @relation(fields: [orderId], references: [orderId])
+
+    productId String
+    product   Product @relation(fields: [productId], references: [productId])
+
+    quantity        Int?
+    unitPrice       Float?
+    subtotal        Float?
+    orderItemAddons OrderItemAddon[]
+}
+
+model OrderItemAddon {
+    orderItemAddonId String @id @default(uuid())
+
+    itemId    String
+    orderItem OrderItem @relation(fields: [itemId], references: [itemId])
+
+    addonId   String
+    addonName String
+    price     Float
+}
+
+model Review {
+    reviewId String @id @default(uuid())
+
+    customerId String
+    customer   User   @relation(fields: [customerId], references: [id])
+
+    productId String
+    product   Product @relation(fields: [productId], references: [productId])
+
+    rating  Int
+    comment String?
+
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    reviewReplays ReviewReplay[]
+}
+
+model ReviewReplay {
+    replyId String @id @default(uuid())
+
+    reviewId String
+    review   Review @relation(fields: [reviewId], references: [reviewId])
+
+    userId String
+    user   User   @relation(fields: [userId], references: [id])
+
+    comment String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum OrderStatus {
+    PENDING
+    CONFIRMED
+    PREPARING
+    READY
+    DELIVERED
+    CANCELLED
+}
+
+enum PRICETYPE {
+    BASE
+    SIZE
+}
+
+enum AVAILABILITYSTATUS {
+    AVAILABLE
+    NOT_AVAILABLE
+}

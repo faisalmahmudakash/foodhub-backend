@@ -1,0 +1,45 @@
+model User {
+    id            String  @id
+    name          String
+    email         String
+    emailVerified Boolean @default(false)
+    image         String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    sessions Session[]
+    accounts Account[]
+
+    // additional
+    phone          String
+    defaultAddress String?
+    role           Role    @default(CUSTOMER)
+    status         Status  @default(ACTIVE)
+
+    //provider
+    companyName String?
+    description String?
+
+    // relatioins
+    product      Product[] //if provider
+    orders       Order[] //if customer
+    reviews      Review[]
+    cartItems    CartItem[]
+    reviewReplay ReviewReplay[]
+
+    @@unique([email])
+    @@map("user")
+}
+
+enum Role {
+    ADMIM
+    PROVIDER
+    CUSTOMER
+}
+
+enum Status {
+    ACTIVE
+    INACTIVE
+    BANNED
+}

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Build outputs
+dist/
+build/
+
+# Prisma generated client (if you use custom output)
+prisma/generated/
+generated/
+
+# Prisma migrations (optional keep if you want history)
+prisma/migrations/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
