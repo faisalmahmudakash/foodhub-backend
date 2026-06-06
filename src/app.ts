@@ -27,7 +27,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/product", productRouter);
-// app.use("/provider", providerRouter);
 app.use("/addon", addonRouter);
 app.use("/cartItem", createItemRouter);
 app.use("/order", orderRouter);

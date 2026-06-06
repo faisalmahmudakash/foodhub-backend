@@ -74,13 +74,6 @@ const createItem = async (data: CreateCartInput) => {
       throw new Error("Addon not found");
     }
 
-    // // Addon এই product এর কিনা check করুন
-    // if (addon.productId !== data.productId) {
-    //   throw new Error("Addon does not belong to this product");
-    // }
-
-    // addonPrice = Number(addon.price) || 0;
-
     addonPrice = addons.reduce((total, addon) => total + addon.price, 0);
     validAddons = addons.map((addon) => ({ addonId: addon.addonId })); // ✅ addons — আর addon না
   }

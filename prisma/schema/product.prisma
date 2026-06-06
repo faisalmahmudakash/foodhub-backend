@@ -4,6 +4,9 @@ model Product {
     providerId String
     provider   User   @relation(fields: [providerId], references: [id])
 
+    mileTimeId String?
+    mileTiem   MileTime? @relation(fields: [mileTimeId], references: [mileTimeId])
+
     productName String
     description String?
     images      String?
@@ -14,7 +17,6 @@ model Product {
 
     tags        String[]
     ingredients String[]
-    mileTime    String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -26,11 +28,18 @@ model Product {
     reviews       Review[]
 }
 
+model MileTime {
+    mileTimeId String @id @default(uuid())
+
+    mileTime String[]
+    products Product[]
+}
+
 model ProductPrice {
     priceId String @id @default(uuid())
 
     productId String
-    product   Product @relation(fields: [productId], references: [productId])
+    product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
 
     priceType PRICETYPE @default(BASE)
     size      String?
@@ -47,7 +56,7 @@ model Addon {
     addonId String @id @default(uuid())
 
     productId String
-    product   Product @relation(fields: [productId], references: [productId])
+    product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
 
     addonName      String
     price          Float
@@ -62,7 +71,7 @@ model CartItem {
     customer   User   @relation(fields: [customerId], references: [id])
 
     productId String
-    product   Product @relation(fields: [productId], references: [productId])
+    product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
 
     priceId      String?
     productPrice ProductPrice? @relation(fields: [priceId], references: [priceId])
@@ -113,7 +122,7 @@ model OrderItem {
     order   Order  @relation(fields: [orderId], references: [orderId])
 
     productId String
-    product   Product @relation(fields: [productId], references: [productId])
+    product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
 
     quantity        Int?
     unitPrice       Float?
@@ -125,7 +134,7 @@ model OrderItemAddon {
     orderItemAddonId String @id @default(uuid())
 
     itemId    String
-    orderItem OrderItem @relation(fields: [itemId], references: [itemId])
+    orderItem OrderItem @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
 
     addonId   String
     addonName String
@@ -139,7 +148,7 @@ model Review {
     customer   User   @relation(fields: [customerId], references: [id])
 
     productId String
-    product   Product @relation(fields: [productId], references: [productId])
+    product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
 
     rating  Int
     comment String?
@@ -153,7 +162,7 @@ model ReviewReplay {
     replyId String @id @default(uuid())
 
     reviewId String
-    review   Review @relation(fields: [reviewId], references: [reviewId])
+    review   Review @relation(fields: [reviewId], references: [reviewId], onDelete: Cascade)
 
     userId String
     user   User   @relation(fields: [userId], references: [id])
