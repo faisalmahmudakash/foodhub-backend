@@ -3,6 +3,6 @@ import { createItemController } from "./createItem.controller";
 
 const router = express.Router();
 
-router.use("/", createItemController.createItem);
+router.post("/", createItemController.createItem);
 
 export const createItemRouter = router;
