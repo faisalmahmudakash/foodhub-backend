@@ -1,3 +1,4 @@
+import { equal } from "node:assert";
 import { prisma } from "../../lib/prisma";
 import type {
   CreateMileTimeInput,
@@ -186,9 +187,57 @@ const getMileTime = async () => {
   };
 };
 
-const getAllProduct = async () => {
+const getAllProduct = async ({
+  search,
+  page,
+  limit,
+  skip,
+  sortBy,
+  sortOrder,
+}: {
+  search: string | undefined;
+  page: number;
+  limit: number;
+  skip: number;
+  sortBy: string;
+  sortOrder: string;
+}) => {
+  const whereClause = search
+    ? {
+        OR: [
+          {
+            productName: {
+              contains: search,
+              mode: "insensitive" as const,
+            },
+          },
+          {
+            description: {
+              contains: search,
+              mode: "insensitive" as const,
+            },
+          },
+          {
+            tags: {
+              has: search.toLowerCase(), // array field
+            },
+          },
+          {
+            ingredients: {
+              has: search.toLowerCase(), // array field
+            },
+          },
+        ],
+      }
+    : {};
+
   const [data, total] = await Promise.all([
     prisma.product.findMany({
+      where: whereClause,
+
+      skip,
+      take: limit,
+
       include: {
         productPrices: {
           select: {
@@ -200,13 +249,20 @@ const getAllProduct = async () => {
           },
         },
       },
+
+      orderBy: { [sortBy]: sortOrder },
     }),
-    prisma.product.count(),
+    prisma.product.count({ where: whereClause }),
   ]);
 
   return {
     data,
-    total,
+    paginatioin: {
+      total: total,
+      page: page,
+      limit: limit,
+      totalPages: Math.ceil(total / limit),
+    },
   };
 };
 

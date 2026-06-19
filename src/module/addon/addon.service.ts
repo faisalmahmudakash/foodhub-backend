@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { addonCreateInput, addonDelete, addonUpdate } from "./addon.types";
+import type { addonCreateInput, addonDelete, addonUpdate } from "./addon.types.ts";
 
 const createAddon = async ({
   productId,

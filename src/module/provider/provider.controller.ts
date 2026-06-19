@@ -3,7 +3,8 @@ import { providerService } from "./provider.service";
 
 const createProvider = async (req: Request, res: Response) => {
   try {
-    const result = await providerService.createProvider(req.body);
+    const { userId } = req.params as { userId: string };
+    const result = await providerService.createProvider(userId);
 
     res.status(201).json({
       success: true,

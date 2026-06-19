@@ -1,9 +1,12 @@
 import type { Request, Response } from "express";
 import { productService } from "./product.service";
 import { productRouter } from "./product.router";
+import paginationSortingHelper from "../../helpers/paginationSortingHelper";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
+    console.log(req.user);
+
     const {
       providerId,
       mileTimeId,
@@ -213,7 +216,27 @@ const getMileTime = async (req: Request, res: Response) => {
 
 const getAllProduct = async (req: Request, res: Response) => {
   try {
-    const result = await productService.getAllProduct();
+    const search = req.query.search;
+    const searchString = typeof search === "string" ? search : undefined;
+
+    const page = Number(req.query.page ?? 1);
+    const limit = Number(req.query.limit ?? 10);
+
+    const skip = (page - 1) * limit;
+
+    const sortBy = req.query.sortBy as string;
+    const sortOrder = req.query.sortOrder as string;
+
+    const options = paginationSortingHelper(req.query);
+
+    const result = await productService.getAllProduct({
+      search: searchString,
+      page,
+      limit,
+      skip,
+      sortBy,
+      sortOrder,
+    });
 
     console.log(result);
 
