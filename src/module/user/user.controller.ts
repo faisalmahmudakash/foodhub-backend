@@ -43,7 +43,18 @@ const updateProfileImage = async (req: Request, res: Response) => {
   }
 };
 
+const deleteUser = async (req: Request, res: Response) => {
+  const { userid } = req.params;
+  try {
+    const deletedUser = await userService.deleteUser(userid as string);
+    res.status(200).json({ success: true, data: deletedUser });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: { error: error.message } });
+  }
+};
+
 export const userController = {
   updateUser,
   updateProfileImage,
+  deleteUser,
 };

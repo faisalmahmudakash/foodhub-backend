@@ -9,6 +9,7 @@ import { addonRouter } from "./module/addon/addon.router";
 import { createItemRouter } from "./module/createItem/createItem.router";
 import { reviewRouter } from "./module/review/review.router";
 import { userRouter } from "./module/user/user.router";
+import { slideRouter } from "./module/slide/slide.router";
 
 const app = express();
 
@@ -35,5 +36,9 @@ app.use("/review", reviewRouter);
 app.use("/provider", providerRouter);
 
 app.use("/profile", userRouter);
+
+//slides module
+app.use("/api/slides", slideRouter);
+app.use("/api/admin/slides", slideRouter);
 
 export default app;
