@@ -10,6 +10,12 @@ router.post(
   authMiddleware(Role.ADMIM, Role.PROVIDER, Role.CUSTOMER),
   reviewController.createReview,
 );
-router.post("/replay", reviewController.createReplay);
+// router.post("/replay", reviewController.createReplay);
+
+router.post(
+  "/replay",
+  authMiddleware(Role.ADMIM, Role.PROVIDER, Role.CUSTOMER),
+  reviewController.createReplay,
+);
 
 export const reviewRouter = router;

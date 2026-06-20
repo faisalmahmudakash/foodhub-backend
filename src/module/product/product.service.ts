@@ -210,6 +210,61 @@ const getAllProduct = async () => {
   };
 };
 
+const getProductById = async (productId: string) => {
+  const product = await prisma.product.findUnique({
+    where: {
+      productId,
+    },
+    include: {
+      provider: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+      mileTiem: true,
+      productPrices: true,
+      addons: true,
+      reviews: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+          reviewReplays: {
+            orderBy: {
+              createdAt: "asc",
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  role: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  return product;
+};
+
 const updateProduct = async ({
   productId,
   providerId,
@@ -335,4 +390,5 @@ export const productService = {
   updatePrice,
   updateProduct,
   deleteProduct,
+  getProductById,
 };

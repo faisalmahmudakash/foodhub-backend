@@ -319,6 +319,24 @@ const deleteMileTime = async (req: Request, res: Response) => {
   }
 };
 
+const getProductById = async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.params as { productId: string };
+    const result = await productService.getProductById(productId);
+
+    res.status(200).json({
+      success: true,
+      message: "Product Details",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const productController = {
   createProduct,
   createProductPrice,
@@ -332,4 +350,5 @@ export const productController = {
   updatePrice,
   updateProduct,
   deleteProduct,
+  getProductById,
 };

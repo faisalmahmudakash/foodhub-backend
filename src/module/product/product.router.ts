@@ -61,4 +61,6 @@ router.put(
   productController.updatePrice,
 );
 
+router.get("/:productId", productController.getProductById);
+
 export const productRouter = router;
