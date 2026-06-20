@@ -9,35 +9,6 @@ type CreateCartInput = {
 };
 
 const createItem = async (data: CreateCartInput) => {
-  // const existCustomer = await prisma.user.findUnique({
-  //   where: {
-  //     id: data.customerId,
-  //   },
-  // });
-
-  // const existProduct = await prisma.product.findUnique({
-  //   where: {
-  //     productId: data.productId,
-  //   },
-  // });
-
-  // const existPrice = await prisma.productPrice.findUnique({
-  //   where: {
-  //     priceId: data.priceId!,
-  //   },
-  // });
-
-  // if (!existCustomer) {
-  //   throw new Error("Customer not found");
-  // }
-
-  // if (!existProduct) {
-  //   throw new Error("Product not found");
-  // }
-
-  // if (!existPrice) {
-  //   throw new Error("Price not found");
-  // }
 
   const quantity = data.quantity ?? 1;
 
