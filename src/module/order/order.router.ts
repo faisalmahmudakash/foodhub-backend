@@ -11,4 +11,12 @@ router.post(
   orderController.createOrder,
 );
 
+router.get("/", authMiddleware(Role.ADMIM), orderController.getAllOrders);
+
+router.patch(
+  "/:orderId/status",
+  authMiddleware(Role.ADMIM),
+  orderController.updateOrderStatus,
+);
+
 export const orderRouter = router;

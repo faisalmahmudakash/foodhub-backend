@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { OrderStatus } from "../../../prisma/generated/prisma/enums";
 import type { CreateOrderInput } from "./order.types";
 
 const createOrder = async ({ customerId }: CreateOrderInput) => {
@@ -44,7 +45,6 @@ const createOrder = async ({ customerId }: CreateOrderInput) => {
 
   // ৪. Transaction
   const order = await prisma.$transaction(async (tx) => {
-    // Order create
     const newOrder = await tx.order.create({
       data: {
         customerId,
@@ -53,7 +53,6 @@ const createOrder = async ({ customerId }: CreateOrderInput) => {
       },
     });
 
-    // ✅ OrderItems একটা একটা করে create করো addon সহ
     for (const item of itemsWithPrice) {
       const orderItem = await tx.orderItem.create({
         data: {
@@ -65,20 +64,18 @@ const createOrder = async ({ customerId }: CreateOrderInput) => {
         },
       });
 
-      // ✅ Addon থাকলে OrderItemAddon create করো
       if (item.cartItemAddons.length > 0) {
         await tx.orderItemAddon.createMany({
           data: item.cartItemAddons.map((ca) => ({
             itemId: orderItem.itemId,
             addonId: ca.addon.addonId,
-            addonName: ca.addon.addonName, // snapshot
-            price: ca.addon.price, // snapshot
+            addonName: ca.addon.addonName,
+            price: ca.addon.price,
           })),
         });
       }
     }
 
-    // Cart clear
     const cardIds = cartItems.map((item) => item.cartId);
     await tx.cartItemAddon.deleteMany({
       where: { cartId: { in: cardIds } },
@@ -88,7 +85,6 @@ const createOrder = async ({ customerId }: CreateOrderInput) => {
     return newOrder;
   });
 
-  // ৫. Full order return
   return prisma.order.findUnique({
     where: { orderId: order.orderId },
     include: {
@@ -99,4 +95,75 @@ const createOrder = async ({ customerId }: CreateOrderInput) => {
   });
 };
 
-export const orderService = { createOrder };
+const getAllOrders = async () => {
+  return prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+      orderItems: {
+        include: {
+          product: {
+            select: {
+              productId: true,
+              productName: true,
+              images: true,
+              provider: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+          orderItemAddons: true,
+        },
+      },
+    },
+  });
+};
+
+const updateOrderStatus = async ({
+  orderId,
+  status,
+}: {
+  orderId: string;
+  status: string;
+}) => {
+  const validStatuses = Object.values(OrderStatus);
+
+  if (!validStatuses.includes(status as OrderStatus)) {
+    throw new Error("Invalid order status");
+  }
+
+  const existingOrder = await prisma.order.findUnique({
+    where: { orderId },
+  });
+
+  if (!existingOrder) {
+    throw new Error("Order not found");
+  }
+
+  return prisma.order.update({
+    where: { orderId },
+    data: { status: status as OrderStatus },
+    include: {
+      customer: {
+        select: { id: true, name: true, email: true, phone: true },
+      },
+      orderItems: {
+        include: {
+          product: {
+            select: { productId: true, productName: true, images: true },
+          },
+          orderItemAddons: true,
+        },
+      },
+    },
+  });
+};
+
+export const orderService = { createOrder, getAllOrders, updateOrderStatus };
