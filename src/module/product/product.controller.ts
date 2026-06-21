@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { productService } from "./product.service";
-import { productRouter } from "./product.router";
 
 const createProduct = async (req: Request, res: Response) => {
   try {
@@ -230,6 +229,28 @@ const getAllProduct = async (req: Request, res: Response) => {
   }
 };
 
+// GET /product/search?q=<term> — used by the navbar search box (suggestions)
+// and the /menu?q=<term> filtered grid. Returns only matching products,
+// not the full catalog.
+const searchProduct = async (req: Request, res: Response) => {
+  try {
+    const { q } = req.query as { q?: string };
+
+    const result = await productService.searchProduct(q ?? "");
+
+    res.status(200).json({
+      success: true,
+      message: "Search results",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const updateMileTime = async (req: Request, res: Response) => {
   try {
     const { mileTime } = req.body;
@@ -342,6 +363,7 @@ export const productController = {
   createProductPrice,
   createMileTime,
   getAllProduct,
+  searchProduct,
   getMileTime,
   deleteMileTime,
   updateMileTime,

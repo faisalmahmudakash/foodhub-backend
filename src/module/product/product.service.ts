@@ -210,6 +210,51 @@ const getAllProduct = async () => {
   };
 };
 
+// Search products by name (used by the navbar search box + /menu?q=...).
+// Returns an empty result set for very short queries instead of hitting
+// the DB, since the frontend only calls this once 3+ characters are typed.
+const searchProduct = async (searchTerm: string) => {
+  const trimmed = (searchTerm ?? "").trim();
+
+  if (trimmed.length < 3) {
+    return { data: [], total: 0 };
+  }
+
+  const where = {
+    productName: {
+      contains: trimmed,
+      mode: "insensitive" as const,
+    },
+  };
+
+  const [data, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: {
+        productPrices: {
+          select: {
+            productId: true,
+            priceType: true,
+            size: true,
+            price: true,
+            newPrice: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 20,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  return {
+    data,
+    total,
+  };
+};
+
 const getProductById = async (productId: string) => {
   const product = await prisma.product.findUnique({
     where: {
@@ -347,19 +392,6 @@ const updateMileTime = async ({
   });
 };
 
-// const updateProduct = async ({
-//   providerId,
-//   mileTimeId,
-//   productName,
-//   description,
-//   images,
-//   featured,
-//   availabilityStatus,
-//   tags,
-//   ingredients,
-//   productPrice,
-
-// }) => {}
 
 const deleteMileTime = async ({ mileTimeId }: DeleteMileTimeInput) => {
   const exist = await prisma.mileTime.findUnique({
@@ -383,6 +415,7 @@ export const productService = {
   createMileTime,
   getMileTime,
   getAllProduct,
+  searchProduct,
   deleteMileTime,
   updateMileTime,
   deleteAllProductPrice,
