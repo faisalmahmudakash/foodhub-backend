@@ -3,7 +3,6 @@ import { OrderStatus } from "../../../prisma/generated/prisma/enums";
 import type { CreateOrderInput } from "./order.types";
 
 const createOrder = async ({ customerId }: CreateOrderInput) => {
-  // ১. CartItems fetch
   const cartItems = await prisma.cartItem.findMany({
     where: { customerId },
     include: {
@@ -18,7 +17,6 @@ const createOrder = async ({ customerId }: CreateOrderInput) => {
     throw new Error("Cart is Empty");
   }
 
-  // ২. Price calculate
   const itemsWithPrice = cartItems.map((item) => {
     const basePrice = item.productPrice?.price ?? item.unitPrice;
 
@@ -37,13 +35,11 @@ const createOrder = async ({ customerId }: CreateOrderInput) => {
     return { ...item, unitPrice, subtotal };
   });
 
-  // ৩. Total calculate
   const totalAmount = itemsWithPrice.reduce(
     (sum, item) => sum + item.subtotal,
     0,
   );
 
-  // ৪. Transaction
   const order = await prisma.$transaction(async (tx) => {
     const newOrder = await tx.order.create({
       data: {
@@ -100,12 +96,7 @@ const getAllOrders = async () => {
     orderBy: { createdAt: "desc" },
     include: {
       customer: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-        },
+        select: { id: true, name: true, email: true, phone: true },
       },
       orderItems: {
         include: {
@@ -124,6 +115,48 @@ const getAllOrders = async () => {
       },
     },
   });
+};
+
+const getOrdersByCustomerId = async (customerId: string) => {
+  return prisma.order.findMany({
+    where: { customerId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      orderItems: {
+        include: {
+          product: {
+            select: { productId: true, productName: true, images: true },
+          },
+          orderItemAddons: true,
+        },
+      },
+    },
+  });
+};
+
+const getOrderById = async (orderId: string) => {
+  const order = await prisma.order.findUnique({
+    where: { orderId },
+    include: {
+      customer: {
+        select: { id: true, name: true, email: true, phone: true },
+      },
+      orderItems: {
+        include: {
+          product: {
+            select: { productId: true, productName: true, images: true },
+          },
+          orderItemAddons: true,
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  return order;
 };
 
 const updateOrderStatus = async ({
@@ -166,4 +199,10 @@ const updateOrderStatus = async ({
   });
 };
 
-export const orderService = { createOrder, getAllOrders, updateOrderStatus };
+export const orderService = {
+  createOrder,
+  getAllOrders,
+  getOrdersByCustomerId,
+  getOrderById,
+  updateOrderStatus,
+};

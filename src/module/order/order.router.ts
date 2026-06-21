@@ -13,6 +13,18 @@ router.post(
 
 router.get("/", authMiddleware(Role.ADMIM), orderController.getAllOrders);
 
+router.get(
+  "/customer/:customerId",
+  authMiddleware(Role.ADMIM, Role.PROVIDER, Role.CUSTOMER),
+  orderController.getOrdersByCustomer,
+);
+
+router.get(
+  "/:orderId",
+  authMiddleware(Role.ADMIM, Role.PROVIDER, Role.CUSTOMER),
+  orderController.getOrderById,
+);
+
 router.patch(
   "/:orderId/status",
   authMiddleware(Role.ADMIM),
