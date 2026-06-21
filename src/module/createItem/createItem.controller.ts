@@ -30,10 +30,12 @@ const createItem = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    res.status(404).json({
+    console.error("createItem error:", error);
+
+    res.status(400).json({
       success: false,
-      message: "Somthing is Wrong",
-      details: error,
+      message:
+        error.message || "Something went wrong while creating the cart item",
     });
   }
 };

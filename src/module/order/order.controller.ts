@@ -23,7 +23,7 @@ const createOrder = async (req: Request, res: Response) => {
 
     console.log(result);
   } catch (error: any) {
-    const isClientError = error.message === "Cart is empty";
+    const isClientError = error.message === "Cart is Empty";
 
     res.status(isClientError ? 400 : 500).json({
       success: false,
