@@ -17,8 +17,49 @@ const createReview = async (req: Request, res: Response) => {
       body: result,
     });
   } catch (error: any) {
-    res.status(400).json({
+    const isEligibilityError = error.message?.startsWith(
+      "You can only review products",
+    );
+
+    res.status(isEligibilityError ? 403 : 400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const checkCanReview = async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.params;
+    const { customerId } = req.query;
+
+    if (!productId || typeof productId !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "productId param is required",
+      });
+    }
+
+    if (!customerId || typeof customerId !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "customerId query param is required",
+      });
+    }
+
+    const canReview = await reviewService.canCustomerReview(
+      customerId,
+      productId,
+    );
+
+    res.status(200).json({
       success: true,
+      message: "Checked review eligibility",
+      data: { canReview },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
       message: error.message,
     });
   }
@@ -49,7 +90,29 @@ const createReplay = async (req: Request, res: Response) => {
   }
 };
 
+// GET /review/provider/mine — used by the provider dashboard's
+// "Reviews" page. Scoped to the logged-in provider via req.user.id.
+const getMyProductReviews = async (req: Request, res: Response) => {
+  try {
+    const providerId = req.user!.id;
+    const result = await reviewService.getReviewsByProvider(providerId);
+
+    res.status(200).json({
+      success: true,
+      message: "Reviews on your products",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const reviewController = {
   createReview,
   createReplay,
+  checkCanReview,
+  getMyProductReviews,
 };

@@ -1,31 +1,53 @@
-import { Role } from "../../../prisma/generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
-const createProvider = async (id: string) => {
-  const existUser = await prisma.user.findUnique({
-    where: {
-      id,
-    },
-  });
+const getProviderStats = async (providerId: string) => {
+  const [totalProducts, totalReviews, ratingAgg, orders] = await Promise.all([
+    prisma.product.count({ where: { providerId } }),
+    prisma.review.count({ where: { product: { providerId } } }),
+    prisma.review.aggregate({
+      where: { product: { providerId } },
+      _avg: { rating: true },
+    }),
+    prisma.order.findMany({
+      where: {
+        orderItems: {
+          some: { product: { providerId } },
+        },
+      },
+      select: {
+        status: true,
+        orderItems: {
+          where: { product: { providerId } },
+          select: { subtotal: true },
+        },
+      },
+    }),
+  ]);
 
-  if (!existUser) {
-    throw new Error("User Not Found");
-  }
+  const totalOrders = orders.length;
 
-  if (existUser.role === Role.PROVIDER) {
-    throw new Error("This User Already a provider");
-  }
+  const totalRevenue = orders
+    .filter((o) => o.status === "DELIVERED")
+    .reduce(
+      (sum, order) =>
+        sum + order.orderItems.reduce((s, item) => s + (item.subtotal ?? 0), 0),
+      0,
+    );
 
-  return prisma.user.update({
-    where: {
-      id,
-    },
-    data: {
-      role: Role.PROVIDER,
-    },
-  });
+  const pendingOrders = orders.filter((o) =>
+    ["PENDING", "CONFIRMED", "PREPARING", "READY"].includes(o.status),
+  ).length;
+
+  return {
+    totalProducts,
+    totalOrders,
+    pendingOrders,
+    totalRevenue,
+    totalReviews,
+    averageRating: ratingAgg._avg.rating ?? 0,
+  };
 };
 
 export const providerService = {
-  createProvider,
+  getProviderStats,
 };

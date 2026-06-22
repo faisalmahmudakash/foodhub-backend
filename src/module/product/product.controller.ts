@@ -229,6 +229,26 @@ const getAllProduct = async (req: Request, res: Response) => {
   }
 };
 
+// GET /product/provider/mine — used by the provider dashboard's
+// "My Products" page. Scoped to the logged-in provider via req.user.id.
+const getMyProducts = async (req: Request, res: Response) => {
+  try {
+    const providerId = req.user!.id;
+    const result = await productService.getProductsByProvider(providerId);
+
+    res.status(200).json({
+      success: true,
+      message: "Your products",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // GET /product/search?q=<term> — used by the navbar search box (suggestions)
 // and the /menu?q=<term> filtered grid. Returns only matching products,
 // not the full catalog.
@@ -363,6 +383,7 @@ export const productController = {
   createProductPrice,
   createMileTime,
   getAllProduct,
+  getMyProducts,
   searchProduct,
   getMileTime,
   deleteMileTime,

@@ -20,6 +20,12 @@ router.get(
 );
 
 router.get(
+  "/provider/mine",
+  authMiddleware(Role.ADMIM, Role.PROVIDER),
+  orderController.getMyOrders,
+);
+
+router.get(
   "/:orderId",
   authMiddleware(Role.ADMIM, Role.PROVIDER, Role.CUSTOMER),
   orderController.getOrderById,

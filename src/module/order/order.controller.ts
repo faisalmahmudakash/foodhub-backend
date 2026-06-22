@@ -71,6 +71,27 @@ const getOrdersByCustomer = async (req: Request, res: Response) => {
   }
 };
 
+// GET /order/provider/mine — used by the provider dashboard's
+// "Orders" page. Scoped to the logged-in provider via req.user.id.
+const getMyOrders = async (req: Request, res: Response) => {
+  try {
+    const providerId = req.user!.id;
+    const result = await orderService.getOrdersByProviderId(providerId);
+
+    res.status(200).json({
+      success: true,
+      message: "Your orders",
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("getMyOrders error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch your orders",
+    });
+  }
+};
+
 const getOrderById = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.params as { orderId: string };
@@ -129,6 +150,7 @@ export const orderController = {
   createOrder,
   getAllOrders,
   getOrdersByCustomer,
+  getMyOrders,
   getOrderById,
   updateOrderStatus,
 };

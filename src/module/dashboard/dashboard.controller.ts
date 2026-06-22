@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { dashboardService } from "./Dashboard.Service";
+import { dashboardService } from "./dashboard.Service";
 
 
 const getAdminOverview = async (req: Request, res: Response) => {

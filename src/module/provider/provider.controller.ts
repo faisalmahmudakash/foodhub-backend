@@ -1,14 +1,14 @@
 import type { Request, Response } from "express";
 import { providerService } from "./provider.service";
 
-const createProvider = async (req: Request, res: Response) => {
+const getMyStats = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params as { userId: string };
-    const result = await providerService.createProvider(userId);
+    const providerId = req.user!.id;
+    const result = await providerService.getProviderStats(providerId);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "Provider Created Successfully",
+      message: "Provider stats",
       data: result,
     });
   } catch (error: any) {
@@ -20,5 +20,5 @@ const createProvider = async (req: Request, res: Response) => {
 };
 
 export const providerController = {
-  createProvider,
+  getMyStats,
 };

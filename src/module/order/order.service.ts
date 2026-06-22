@@ -96,7 +96,13 @@ const getAllOrders = async () => {
     orderBy: { createdAt: "desc" },
     include: {
       customer: {
-        select: { id: true, name: true, email: true, phone: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          defaultAddress: true,
+        },
       },
       orderItems: {
         include: {
@@ -134,12 +140,59 @@ const getOrdersByCustomerId = async (customerId: string) => {
   });
 };
 
+// Orders containing at least one item from this provider's products —
+// used by the provider dashboard's "Orders" page. orderItems is filtered
+// to only this provider's items, and providerSubtotal is computed since
+// order.totalAmount covers the whole cart (which may span providers).
+const getOrdersByProviderId = async (providerId: string) => {
+  const orders = await prisma.order.findMany({
+    where: {
+      orderItems: {
+        some: {
+          product: { providerId },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    include: {
+      customer: {
+        select: { id: true, name: true, email: true, phone: true },
+      },
+      orderItems: {
+        where: {
+          product: { providerId },
+        },
+        include: {
+          product: {
+            select: { productId: true, productName: true, images: true },
+          },
+          orderItemAddons: true,
+        },
+      },
+    },
+  });
+
+  return orders.map((order) => ({
+    ...order,
+    providerSubtotal: order.orderItems.reduce(
+      (sum, item) => sum + (item.subtotal ?? 0),
+      0,
+    ),
+  }));
+};
+
 const getOrderById = async (orderId: string) => {
   const order = await prisma.order.findUnique({
     where: { orderId },
     include: {
       customer: {
-        select: { id: true, name: true, email: true, phone: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          defaultAddress: true,
+        },
       },
       orderItems: {
         include: {
@@ -185,7 +238,13 @@ const updateOrderStatus = async ({
     data: { status: status as OrderStatus },
     include: {
       customer: {
-        select: { id: true, name: true, email: true, phone: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          defaultAddress: true,
+        },
       },
       orderItems: {
         include: {
@@ -203,6 +262,7 @@ export const orderService = {
   createOrder,
   getAllOrders,
   getOrdersByCustomerId,
+  getOrdersByProviderId,
   getOrderById,
   updateOrderStatus,
 };

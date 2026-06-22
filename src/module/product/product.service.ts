@@ -210,6 +210,33 @@ const getAllProduct = async () => {
   };
 };
 
+// Provider's own products — used by the provider dashboard products page.
+const getProductsByProvider = async (providerId: string) => {
+  const [data, total] = await Promise.all([
+    prisma.product.findMany({
+      where: { providerId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        productPrices: {
+          select: {
+            productId: true,
+            priceType: true,
+            size: true,
+            price: true,
+            newPrice: true,
+          },
+        },
+      },
+    }),
+    prisma.product.count({ where: { providerId } }),
+  ]);
+
+  return {
+    data,
+    total,
+  };
+};
+
 // Search products by name (used by the navbar search box + /menu?q=...).
 // Returns an empty result set for very short queries instead of hitting
 // the DB, since the frontend only calls this once 3+ characters are typed.
@@ -392,7 +419,6 @@ const updateMileTime = async ({
   });
 };
 
-
 const deleteMileTime = async ({ mileTimeId }: DeleteMileTimeInput) => {
   const exist = await prisma.mileTime.findUnique({
     where: {
@@ -415,6 +441,7 @@ export const productService = {
   createMileTime,
   getMileTime,
   getAllProduct,
+  getProductsByProvider,
   searchProduct,
   deleteMileTime,
   updateMileTime,

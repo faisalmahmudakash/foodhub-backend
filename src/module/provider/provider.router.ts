@@ -5,10 +5,10 @@ import authMiddleware from "../../middleware/authMiddleware";
 
 const router = express.Router();
 
-router.post(
-  "/:userId",
-  authMiddleware(Role.ADMIM),
-  providerController.createProvider,
+router.get(
+  "/stats",
+  authMiddleware(Role.ADMIM, Role.PROVIDER),
+  providerController.getMyStats,
 );
 
 export const providerRouter = router;

@@ -25,6 +25,11 @@ router.get("/", productController.getAllProduct);
 router.get("/mile", productController.getMileTime);
 // Must come before "/:productId" or Express would treat "search" as a productId.
 router.get("/search", productController.searchProduct);
+router.get(
+  "/provider/mine",
+  authMiddleware(Role.ADMIM, Role.PROVIDER),
+  productController.getMyProducts,
+);
 
 router.delete(
   "/:productId",
