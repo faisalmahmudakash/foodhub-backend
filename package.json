@@ -8,7 +8,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node --import extensionless/register dist/src/server.js"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -27,6 +29,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "extensionless": "^2.0.6",
     "nodemailer": "^8.0.8",
     "pg": "^8.21.0"
   }

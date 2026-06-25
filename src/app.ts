@@ -9,7 +9,6 @@ import { addonRouter } from "./module/addon/addon.router";
 import { createItemRouter } from "./module/createItem/createItem.router";
 import { reviewRouter } from "./module/review/review.router";
 import { userRouter } from "./module/user/user.router";
-import { slideRouter } from "./module/slide/slide.router";
 import { dashboardRouter } from "./module/dashboard/dashboard.router";
 
 const app = express();
@@ -38,9 +37,6 @@ app.use("/provider", providerRouter);
 
 app.use("/profile", userRouter);
 
-//slides module
-app.use("/api/slides", slideRouter);
-app.use("/api/admin/slides", slideRouter);
 app.use("/dashboard", dashboardRouter);
 
 export default app;
